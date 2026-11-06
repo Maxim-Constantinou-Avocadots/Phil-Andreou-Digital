@@ -325,6 +325,21 @@
     event.preventDefault();
     closeProject();
   });
+  projectDialog?.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab") return;
+    const controls = $$("a[href],button:not([disabled]),[tabindex='0']", projectDialog)
+      .filter((element) => element.getClientRects().length);
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (!first) return;
+    if (event.shiftKey && (document.activeElement === first || event.target === first)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || event.target === last)) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
   projectDialog?.addEventListener("close", () => {
     ++projectRequest;
     projectClosing = false;
