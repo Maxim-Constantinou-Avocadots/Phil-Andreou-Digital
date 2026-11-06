@@ -1,0 +1,19 @@
+{
+  "name": "phil-andreou-digital-modern",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-interactive.mjs && python build.py"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.17.2",
+    "@wix/ricos": "11.17.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "esbuild": "0.25.12"
+  }
+}

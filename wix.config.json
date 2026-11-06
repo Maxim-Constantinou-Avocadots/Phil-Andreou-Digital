@@ -1,0 +1,7 @@
+{
+  "siteId": "a3116e4c-3826-4acb-a8bd-72028284651a",
+  "appId": "36d515cd-302a-4ce5-8b8a-77ff6e040c8b",
+  "site": {
+    "outputDirectory": "./dist"
+  }
+}

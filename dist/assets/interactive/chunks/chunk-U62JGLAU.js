@@ -1,0 +1,1 @@
+var E={};function o(i,e=!1,n=t=>t){return()=>({__type:"event-definition",type:i,isDomainEvent:e,transformations:n})}var S="wix_spi_error",r={ASC:"ASC",DESC:"DESC"},v={...r,BOTH:"BOTH",NONE:"NONE"};export{E as a,o as b,S as c};

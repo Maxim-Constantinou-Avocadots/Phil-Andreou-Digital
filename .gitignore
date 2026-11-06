@@ -1,0 +1,12 @@
+node_modules/
+__pycache__/
+*.py[cod]
+.taste-skill/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.zip
+*.tar.gz
+*.log
+release/

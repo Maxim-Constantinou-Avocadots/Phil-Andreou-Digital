@@ -1,0 +1,1 @@
+function d(l,a=0,c){let e,i=!1,t,o=(...n)=>{t=n,c?.leading&&e===void 0?(i=!1,l(...n)):i=!0,clearTimeout(e),e=setTimeout(()=>{e=void 0,i&&(i=!1,l(...t))},a)};return o.cancel=()=>{clearTimeout(e),e=void 0,i=!1},o}export{d as a};
