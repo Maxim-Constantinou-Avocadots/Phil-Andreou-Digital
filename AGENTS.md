@@ -66,3 +66,7 @@ The connected GitHub integration can write commits even when the local Git CLI h
 ## Project viewer
 
 Preserve the image-led project dialog, fixed close toolbar, desktop details panel and mobile stacked scrolling layout. Concept studies must remain clearly labelled. Keep decoded shared-image opening motion, cancellation of stale/closing transitions, previous/next study navigation, title announcements, Escape/outside-click close, focus return and reduced-motion support. Project animation effects must be cancelled after completion so filled effects never leave a reopened dialog invisible. Keep branded thin scrollbars and 16px body copy.
+
+## Work grid after dialog close
+
+Retain focus return to the opener. Grid expansion must use `:focus-visible` for keyboard focus, and only when no work card is hovered. Never use unconditional `:focus-within` expansion: it pins the last-opened card after the modal closes and overrides pointer hover on other cards. Keep pointer hover on all three cards and the 700ms grid transition. The work heading is capped at 64px, flows naturally, and shares the card grid with 16px supporting copy; preserve its scoped tablet/mobile reflow.
