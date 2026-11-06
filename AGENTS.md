@@ -62,3 +62,7 @@ GitHub Actions validates pushes and pull requests and archives the build. It doe
 No duplicated Library source archives are required now that this project is backed by GitHub. Existing archives are historical backups; continue development from GitHub.
 
 The connected GitHub integration can write commits even when the local Git CLI has no push credentials. In that case, use its blob/tree/commit/ref APIs with an expected branch-head lease, verify the resulting tree against the local Git tree, then fetch and align the local branch only after confirming identical trees. Never request or commit personal access tokens just to bypass missing CLI authentication.
+
+## Project viewer
+
+Preserve the image-led project dialog, fixed close toolbar, desktop details panel and mobile stacked scrolling layout. Concept studies must remain clearly labelled. Keep decoded shared-image opening motion, cancellation of stale/closing transitions, previous/next study navigation, title announcements, Escape/outside-click close, focus return and reduced-motion support. Project animation effects must be cancelled after completion so filled effects never leave a reopened dialog invisible. Keep branded thin scrollbars and 16px body copy.

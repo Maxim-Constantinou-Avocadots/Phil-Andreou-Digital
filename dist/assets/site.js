@@ -199,15 +199,170 @@
   $$("[data-quote]").forEach((trigger) => trigger.addEventListener("click", () => openQuote(trigger)));
   if (inlineQuote) openQuote({ dataset: {} }, false);
   $$("[data-close]").forEach((button) => {
-    button.addEventListener("click", () => button.closest("dialog").close());
+    button.addEventListener("click", () => {
+      const dialog = button.closest("dialog");
+      if (dialog === projectDialog) closeProject();
+      else dialog.close();
+    });
   });
   $$("dialog").forEach((dialog) => {
     dialog.addEventListener("click", (event) => {
       if (event.target !== dialog) return;
       const rect = dialog.getBoundingClientRect();
       if (event.clientX < rect.left || event.clientX > rect.right ||
-          event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+          event.clientY < rect.top || event.clientY > rect.bottom) {
+        if (dialog === projectDialog) closeProject();
+        else dialog.close();
+      }
     });
+  });
+
+  let projectRequest = 0;
+  let projectIndex = 0;
+  let projectOpener;
+  let projectClosing = false;
+  const projectAnimations = new Set();
+  const projectShell = $(".project-shell", projectDialog);
+  const projectImage = $("#project-image");
+  const projectCopy = $(".project-dialog-copy", projectDialog);
+
+  function animateProject(element, frames, options) {
+    if (reducedMotion.matches || !element.animate) return Promise.resolve();
+    const animation = element.animate(frames, { easing: "cubic-bezier(.16,1,.3,1)", ...options });
+    projectAnimations.add(animation);
+    return animation.finished.catch(() => {}).finally(() => {
+      projectAnimations.delete(animation);
+      animation.cancel();
+    });
+  }
+
+  function clearProjectMotion() {
+    projectAnimations.forEach((animation) => animation.cancel());
+    projectAnimations.clear();
+    $$(".project-flight", projectDialog).forEach((image) => image.remove());
+    projectImage.style.visibility = "";
+  }
+
+  async function decodeProject(project) {
+    const image = new Image();
+    image.src = "/assets/images/" + project.image;
+    try { await image.decode(); } catch { /* The normal image remains the fallback. */ }
+    return image.src;
+  }
+
+  function paintProject(project, source) {
+    $("#project-title").textContent = project.title;
+    $("#project-description").textContent = project.description;
+    $("#project-detail").textContent = project.detail;
+    $("#project-category").textContent = project.category;
+    projectImage.src = source;
+    projectImage.alt = project.description;
+    $("#project-service").href = localPath("/services/" + project.service + ".html");
+    projectCopy.scrollTop = 0;
+  }
+
+  async function revealProject(trigger) {
+    const request = ++projectRequest;
+    const content = await loadContent();
+    const index = content.projects.findIndex((item) => item.id === trigger.dataset.project);
+    if (index < 0) return;
+    const project = content.projects[index];
+    const source = await decodeProject(project);
+    if (request !== projectRequest) return;
+    clearProjectMotion();
+    projectClosing = false;
+    projectDialog.classList.remove("is-closing");
+    projectOpener = trigger;
+    projectIndex = index;
+    const from = $("img", trigger).getBoundingClientRect();
+    paintProject(project, source);
+    if (!projectDialog.open) projectDialog.showModal();
+    $(".project-layout", projectDialog).scrollTop = 0;
+    $("#project-title").focus({ preventScroll: true });
+    if (reducedMotion.matches) return;
+    const target = projectImage.getBoundingClientRect();
+    if (from.width > 0 && target.width > 0 && target.height > 0) {
+      const flight = projectImage.cloneNode();
+      flight.removeAttribute("id");
+      flight.alt = "";
+      flight.setAttribute("aria-hidden", "true");
+      flight.className = "project-flight";
+      Object.assign(flight.style, { left: target.left + "px", top: target.top + "px", width: target.width + "px", height: target.height + "px" });
+      projectDialog.append(flight);
+      projectImage.style.visibility = "hidden";
+      animateProject(flight, [
+        { transform: `translate(${from.left - target.left}px,${from.top - target.top}px) scale(${from.width / target.width},${from.height / target.height})` },
+        { transform: "none" }
+      ], { duration: 620 }).then(() => {
+        flight.remove();
+        if (request === projectRequest) projectImage.style.visibility = "";
+      });
+    }
+    animateProject(projectShell, [
+      { opacity: 0, transform: "translateY(20px) scale(.985)" },
+      { opacity: 1, transform: "none" }
+    ], { duration: 480 });
+    animateProject(projectCopy, [
+      { opacity: 0, transform: "translateX(24px)", clipPath: "inset(0 0 12% 0)" },
+      { opacity: 1, transform: "none", clipPath: "inset(0)" }
+    ], { duration: 520, delay: 100, fill: "backwards" });
+  }
+
+  async function closeProject() {
+    if (!projectDialog.open || projectClosing) return;
+    projectClosing = true;
+    ++projectRequest;
+    clearProjectMotion();
+    projectDialog.classList.add("is-closing");
+    await animateProject(projectShell, [
+      { opacity: 1, transform: "none" },
+      { opacity: 0, transform: "translateY(14px) scale(.985)" }
+    ], { duration: 220, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" });
+    projectDialog.close();
+  }
+
+  projectDialog?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeProject();
+  });
+  projectDialog?.addEventListener("close", () => {
+    ++projectRequest;
+    projectClosing = false;
+    clearProjectMotion();
+    projectDialog.classList.remove("is-closing");
+    projectShell.removeAttribute("aria-busy");
+    projectOpener?.focus({ preventScroll: true });
+  });
+  $$("[data-project-step]", projectDialog).forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!projectDialog.open || projectClosing) return;
+      const request = ++projectRequest;
+      projectShell.setAttribute("aria-busy", "true");
+      try {
+        const content = await loadContent();
+        projectIndex = (projectIndex + Number(button.dataset.projectStep) + content.projects.length) % content.projects.length;
+        const project = content.projects[projectIndex];
+        const source = await decodeProject(project);
+        if (request !== projectRequest || projectClosing || !projectDialog.open) return;
+        clearProjectMotion();
+        await animateProject(projectCopy, [{ opacity: 1 }, { opacity: 0 }], { duration: 100 });
+        if (request !== projectRequest || projectClosing) return;
+        paintProject(project, source);
+        $(".project-layout", projectDialog).scrollTop = 0;
+        $("#project-title").focus({ preventScroll: true });
+        const offset = Number(button.dataset.projectStep) * 14;
+        animateProject(projectImage, [{ opacity: .3, transform: `translateX(${offset}px) scale(1.015)` }, { opacity: 1, transform: "none" }], { duration: 360 });
+        animateProject(projectCopy, [{ opacity: 0, transform: `translateX(${offset}px)` }, { opacity: 1, transform: "none" }], { duration: 300 });
+      } finally {
+        if (request === projectRequest) projectShell.removeAttribute("aria-busy");
+      }
+    });
+  });
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) clearProjectMotion();
+  });
+  window.addEventListener("resize", () => {
+    if (projectDialog?.open) clearProjectMotion();
   });
 
   $$("[data-project]").forEach((trigger) => {
@@ -215,16 +370,7 @@
       const originalLabel = trigger.getAttribute("aria-label");
       trigger.setAttribute("aria-busy", "true");
       try {
-        const content = await loadContent();
-        const project = content.projects.find((item) => item.id === trigger.dataset.project);
-        if (!project) return;
-        $("#project-title").textContent = project.title;
-        $("#project-description").textContent = project.description;
-        $("#project-detail").textContent = project.detail;
-        $("#project-image").src = "/assets/images/" + project.image;
-        $("#project-image").alt = "Illustrative concept: " + project.title;
-        $("#project-service").href = localPath("/services/" + project.service + ".html");
-        projectDialog.showModal();
+        await revealProject(trigger);
       } catch {
         const notice = document.createElement("p");
         notice.className = "project-error";

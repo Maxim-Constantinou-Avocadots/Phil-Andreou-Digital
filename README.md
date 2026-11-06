@@ -178,3 +178,10 @@ The footer now uses one full-width reading column at 600px and below, with separ
 The build passed, and the scoped stylesheet detector reported no findings. Source assertions confirmed every one of the 36 HTML pages changed only its stylesheet cache reference. Publication used a guarded stylesheet patch, preserving all other deployed markup and assets.
 
 Live browser checks confirmed the Greek footer at 390px and English footer at 320px have one reading column, no horizontal overflow, no clipped link text, and no navigation targets below 44px. The footer language control switched correctly to the equivalent English homepage. Desktop retained its four-column grid. Browser screenshots were inspected; no real enquiry was sent.
+
+
+### Project viewer refinement — 6 November 2026
+
+Project previews use a large image beside a readable details panel on desktop, with a persistent close toolbar and stacked mobile reading layout. Concept-study labelling and the existing copy/service destinations remain intact. Previous/next controls browse the three studies without closing the viewer and announce the new title to assistive technology.
+
+Opening uses an image flight from the selected card into the viewer, a restrained panel reveal and a quicker closing animation. Image decoding, request counters and cancellation protect repeated interactions. Escape, outside click, native dialog focus containment/return and reduced motion remain supported. The viewer has a red scrollbar; page scrollbars use the site's paper/ink palette. No animation dependency was added.
